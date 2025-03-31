@@ -12,6 +12,18 @@ thread:
         keep-alive-time: 5000
         block-queue-size: 5000
 
+# 动态线程池管理配置
+dynamic:
+  thread:
+    pool:
+      config:
+        # 状态；true = 开启、false 关闭
+        enabled: true
+        # redis host
+        host: 117.72.112.138
+        # redis port
+        port: 16379
+
 #日志
 logging:
   level:
