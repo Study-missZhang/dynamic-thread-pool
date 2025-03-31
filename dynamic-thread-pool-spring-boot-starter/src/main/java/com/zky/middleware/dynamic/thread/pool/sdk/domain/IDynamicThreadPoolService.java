@@ -1,0 +1,19 @@
+package com.zky.middleware.dynamic.thread.pool.sdk.domain;
+
+import com.zky.middleware.dynamic.thread.pool.sdk.domain.model.entity.ThreadPoolConfigEntity;
+
+import java.util.List;
+
+/**
+ * @author: ZhangKaiYuan
+ * @description: 动态线程池服务
+ * @create: 2025/3/31
+ */
+public interface IDynamicThreadPoolService {
+
+    List<ThreadPoolConfigEntity> queryThreadPoolList();
+
+    ThreadPoolConfigEntity queryThreadPoolConfigByName(String threadPoolName);
+
+    void updateThreadPoolConfig(ThreadPoolConfigEntity threadPoolConfigEntity);
+}
