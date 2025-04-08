@@ -1,13 +1,9 @@
 package com.zky.middleware.dynamic.thread.pool.sdk.domain.model.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /**
  * @author: ZhangKaiYuan
  * @description: 线程池配置实体对象
- * @create: 2025/3/31
+ * @create: 2025/4/7
  */
 public class ThreadPoolConfigEntity {
 
@@ -129,3 +125,4 @@ public class ThreadPoolConfigEntity {
     }
 
 }
+

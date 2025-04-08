@@ -8,6 +8,8 @@ import org.redisson.api.listener.MessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * @author: ZhangKaiYuan
  * @description: 监听动态线程池变更
@@ -33,10 +35,12 @@ public class ThreadPoolConfigAdjustListener implements MessageListener<ThreadPoo
     @Override
     public void onMessage(CharSequence charSequence, ThreadPoolConfigEntity threadPoolConfigEntity) {
         logger.info("动态线程池，调整线程池配置。线程池名称:{} 核心线程数:{} 最大线程数:{}", threadPoolConfigEntity.getThreadPoolName(), threadPoolConfigEntity.getPoolSize(), threadPoolConfigEntity.getMaximumPoolSize());
-        //更新线程池
         dynamicThreadPoolService.updateThreadPoolConfig(threadPoolConfigEntity);
 
-        //查询到线程，在注册中心添加
+        // 更新后上报最新数据
+        List<ThreadPoolConfigEntity> threadPoolConfigEntities = dynamicThreadPoolService.queryThreadPoolList();
+        registry.reportThreadPool(threadPoolConfigEntities);
+
         ThreadPoolConfigEntity threadPoolConfigEntityCurrent = dynamicThreadPoolService.queryThreadPoolConfigByName(threadPoolConfigEntity.getThreadPoolName());
         registry.reportThreadPoolConfigParameter(threadPoolConfigEntityCurrent);
         logger.info("动态线程池，上报线程池配置：{}", JSON.toJSONString(threadPoolConfigEntity));

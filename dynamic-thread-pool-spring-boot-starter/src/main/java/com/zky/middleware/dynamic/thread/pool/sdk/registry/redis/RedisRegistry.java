@@ -24,10 +24,10 @@ public class RedisRegistry implements IRegistry {
     }
 
     @Override
-    public void reportThreadPool(List<ThreadPoolConfigEntity> threadPoolConfigEntities) {
+    public void reportThreadPool(List<ThreadPoolConfigEntity> threadPoolEntities) {
         RList<ThreadPoolConfigEntity> list = redissonClient.getList(RegistryEnumVO.THREAD_POOL_CONFIG_LIST_KEY.getKey());
         list.delete();
-        list.addAll(threadPoolConfigEntities);
+        list.addAll(threadPoolEntities);
     }
 
     @Override
@@ -36,4 +36,5 @@ public class RedisRegistry implements IRegistry {
         RBucket<ThreadPoolConfigEntity> bucket = redissonClient.getBucket(cacheKey);
         bucket.set(threadPoolConfigEntity, Duration.ofDays(30));
     }
+
 }

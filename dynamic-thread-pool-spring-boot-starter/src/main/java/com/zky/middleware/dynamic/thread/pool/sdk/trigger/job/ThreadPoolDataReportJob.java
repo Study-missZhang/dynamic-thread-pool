@@ -2,6 +2,7 @@ package com.zky.middleware.dynamic.thread.pool.sdk.trigger.job;
 
 import com.alibaba.fastjson.JSON;
 import com.zky.middleware.dynamic.thread.pool.sdk.domain.DynamicThreadPoolService;
+import com.zky.middleware.dynamic.thread.pool.sdk.domain.IDynamicThreadPoolService;
 import com.zky.middleware.dynamic.thread.pool.sdk.domain.model.entity.ThreadPoolConfigEntity;
 import com.zky.middleware.dynamic.thread.pool.sdk.registry.IRegistry;
 import org.slf4j.Logger;
@@ -20,9 +21,9 @@ public class ThreadPoolDataReportJob {
 
     private final Logger logger = LoggerFactory.getLogger(ThreadPoolDataReportJob.class);
     private final IRegistry registry;
-    private final DynamicThreadPoolService dynamicThreadPoolService;
+    private final IDynamicThreadPoolService dynamicThreadPoolService;
 
-    public ThreadPoolDataReportJob(IRegistry registry, DynamicThreadPoolService dynamicThreadPoolService) {
+    public ThreadPoolDataReportJob(IRegistry registry, IDynamicThreadPoolService dynamicThreadPoolService) {
         this.registry = registry;
         this.dynamicThreadPoolService = dynamicThreadPoolService;
     }

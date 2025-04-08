@@ -42,9 +42,9 @@ public class DynamicThreadPoolAutoConfig {
 
     //redissonClient配置
     @Bean("dynamicThreadRedissonClient")
-    public RedissonClient redissonClient(DynamicThreadPoolAutoProperties properties){
+    public RedissonClient redissonClient(DynamicThreadPoolAutoProperties properties) {
         Config config = new Config();
-        //设定编码器
+        // 根据需要可以设定编解码器；https://github.com/redisson/redisson/wiki/4.-%E6%95%B0%E6%8D%AE%E5%BA%8F%E5%88%97%E5%8C%96
         config.setCodec(JsonJacksonCodec.INSTANCE);
 
         config.useSingleServer()
@@ -68,51 +68,47 @@ public class DynamicThreadPoolAutoConfig {
     }
 
     @Bean
-    public IRegistry redisRegistry(RedissonClient redissonClient){
-        return new RedisRegistry(redissonClient);
+    public IRegistry redisRegistry(RedissonClient dynamicThreadRedissonClient) {
+        return new RedisRegistry(dynamicThreadRedissonClient);
     }
 
-
-
-    //启动的时候获得线程信息
     @Bean("dynamicThreadPollService")
-    public DynamicThreadPoolService dynamicThreadPollService(ApplicationContext applicationContext, Map<String, ThreadPoolExecutor> threadPoolExecutorMap, RedissonClient redissonClient){
+    public DynamicThreadPoolService dynamicThreadPollService(ApplicationContext applicationContext, Map<String, ThreadPoolExecutor> threadPoolExecutorMap, RedissonClient redissonClient) {
         applicationName = applicationContext.getEnvironment().getProperty("spring.application.name");
-        if(StringUtils.isBlank(applicationName)){
+
+        if (StringUtils.isBlank(applicationName)) {
             applicationName = "缺省的";
-            logger.warn("动态线程池，启动提示。 SpringBoot 应用未配置 spring.application.name 无法获取到应用名称");
+            logger.warn("动态线程池，启动提示。SpringBoot 应用未配置 spring.application.name 无法获取到应用名称！");
         }
 
-        //获取缓存数据，设置本地线程池配置
+        // 获取缓存数据，设置本地线程池配置
         Set<String> threadPoolKeys = threadPoolExecutorMap.keySet();
-        for(String threadPoolKey : threadPoolKeys){
-            ThreadPoolConfigEntity threadPoolConfigEntity = redissonClient.<ThreadPoolConfigEntity>getBucket(RegistryEnumVO.THREAD_POOL_CONFIG_LIST_KEY.getKey() + "_" + applicationName + "_" + threadPoolKey).get();
-            if(null == threadPoolConfigEntity) continue;
+        for (String threadPoolKey : threadPoolKeys) {
+            ThreadPoolConfigEntity threadPoolConfigEntity = redissonClient.<ThreadPoolConfigEntity>getBucket(RegistryEnumVO.THREAD_POOL_CONFIG_PARAMETER_LIST_KEY.getKey() + "_" + applicationName + "_" + threadPoolKey).get();
+            if (null == threadPoolConfigEntity) continue;
             ThreadPoolExecutor threadPoolExecutor = threadPoolExecutorMap.get(threadPoolKey);
-            threadPoolExecutor.setMaximumPoolSize(threadPoolConfigEntity.getMaximumPoolSize());
             threadPoolExecutor.setCorePoolSize(threadPoolConfigEntity.getCorePoolSize());
+            threadPoolExecutor.setMaximumPoolSize(threadPoolConfigEntity.getMaximumPoolSize());
         }
 
         return new DynamicThreadPoolService(applicationName, threadPoolExecutorMap);
     }
 
     @Bean
-    public ThreadPoolDataReportJob threadPoolDataReportJob(IRegistry registry, DynamicThreadPoolService dynamicThreadPoolService){
+    public ThreadPoolDataReportJob threadPoolDataReportJob(IDynamicThreadPoolService dynamicThreadPoolService, IRegistry registry) {
         return new ThreadPoolDataReportJob(registry, dynamicThreadPoolService);
     }
 
     @Bean
-    public ThreadPoolConfigAdjustListener threadPoolConfigAdjustListener(IDynamicThreadPoolService dynamicThreadPoolService, IRegistry registry){
+    public ThreadPoolConfigAdjustListener threadPoolConfigAdjustListener(IDynamicThreadPoolService dynamicThreadPoolService, IRegistry registry) {
         return new ThreadPoolConfigAdjustListener(dynamicThreadPoolService, registry);
     }
 
     @Bean(name = "dynamicThreadPoolRedisTopic")
-    public RTopic threadPoolConfigAdjustListener(RedissonClient redissonClient, ThreadPoolConfigAdjustListener threadPoolConfigAdjustListener){
-        //从Redisson中获取主题【RTopic 是 Redisson 提供的用于处理 Redis 发布/订阅消息的 API】
+    public RTopic threadPoolConfigAdjustListener(RedissonClient redissonClient, ThreadPoolConfigAdjustListener threadPoolConfigAdjustListener) {
         RTopic topic = redissonClient.getTopic(RegistryEnumVO.DYNAMIC_THREAD_POOL_REDIS_TOPIC.getKey() + "_" + applicationName);
-        //addListener 方法将 ThreadPoolConfigEntity.class 类型的消息与 threadPoolConfigAdjustListener 监听器关联。
-        //当 Redis 中发布此类型的消息时，ThreadPoolConfigAdjustListener 的 onMessage 方法会被触发，从而处理更新线程池配置的操作。
         topic.addListener(ThreadPoolConfigEntity.class, threadPoolConfigAdjustListener);
         return topic;
     }
+
 }
